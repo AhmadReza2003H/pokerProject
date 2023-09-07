@@ -1,11 +1,18 @@
 #include "hands.h"
 #include <iostream>
 
-bool isRoyalFlush(char* suits , int* ranks){
-    if(isFlush(suits , ranks) && isStraight(suits , ranks)){
+std::istream & operator>>(std::istream &is  , PokerHand &pokerHand){
+    for(int i = 0 ; i < 5 ; i++){
+        is >> pokerHand.suits[i] >> pokerHand.ranks[i];
+    }
+    return is;
+}
+
+bool isRoyalFlush(const PokerHand * pokerHand){
+    if(isFlush(pokerHand) && isStraight(pokerHand)){
         int counter = 0;
         for(int i = 0 ; i < 5 ; i++){
-            if(ranks[i] == 1 || ranks[i] == 13){
+            if(pokerHand->ranks[i] == 1 || pokerHand->ranks[i] == 13){
                 counter++;
             }
         }
@@ -13,77 +20,59 @@ bool isRoyalFlush(char* suits , int* ranks){
     }
     return false;
 }
-bool isStraightFlush(char* suits , int* ranks){
-    return (isStraight(suits , ranks) && isFlush(suits , ranks));
-}
-bool isFourOfKind(char* suits , int* ranks){
-    int counter = 0;
-    for(int i = 0 ; i < 2 ; i++){
-        for(int j = i+1 ; j < 5 ; j++){
-            if(ranks[i] == ranks[j]){
-                counter++;
-            }
-        }
-        if(counter == 3){
-            return true;
-        }
-        counter = 0;
-    } 
-    return false;
+
+bool isStraightFlush(const PokerHand * pokerHand){
+    return (isStraight(pokerHand) && isFlush(pokerHand));
 }
 
-bool isFullHouse(char* suits , int* ranks){
-    return (isOnePair(suits , ranks) && isThreeOfKind(suits , ranks));
+bool isFourOfKind(const PokerHand * pokerHand){
+    return pairChecker(pokerHand , 4);
 }
-bool isFlush(char* suits , int* ranks){
+
+bool isFullHouse(const PokerHand * pokerHand){
+    return (isOnePair(pokerHand) && isThreeOfKind(pokerHand));
+}
+
+bool isFlush(const PokerHand * pokerHand){
     for(int i = 1; i < 5 ; i++){
-        if(suits[0] != suits[i]){
+        if(pokerHand->suits[0] != pokerHand->suits[i]){
             return false;
         }
     }
     return true;
 }
-bool isStraight(char* suits , int* ranks){
+
+bool isStraight(const PokerHand * pokerHand){
     int forwardCounter = 0;
     int backCounter = 0 ;
     for(int i = 1 ; i < 5 ; i++){
-        if(ranks[i] == ranks[0]+forwardCounter+1){
+        if(pokerHand->ranks[i] == pokerHand->ranks[0]+forwardCounter+1){
             forwardCounter++;
-        } else if(ranks[i] == ranks[0]-backCounter-1){
+        } else if(pokerHand->ranks[i] == pokerHand->ranks[0]-backCounter-1){
             backCounter++;
-        } else if(ranks[0]+forwardCounter+1 > 13){
-            if(ranks[0]+forwardCounter+1-13 == ranks[i]){
+        } else if(pokerHand->ranks[0]+forwardCounter+1 > 13){
+            if(pokerHand->ranks[0]+forwardCounter+1-13 == pokerHand->ranks[i]){
                 forwardCounter++;
             }
-        } else if(ranks[0]-backCounter-1 < 1 ){
-            if(ranks[i] == ranks[0]-backCounter-1+13){
+        } else if(pokerHand->ranks[0]-backCounter-1 < 1 ){
+            if(pokerHand->ranks[i] == pokerHand->ranks[0]-backCounter-1+13){
                 backCounter++;
             }
         }
     }
     return backCounter + forwardCounter == 4 ? true : false;
 }
-bool isThreeOfKind(char* suits , int* ranks){
-    int counter = 0;
-    for(int i = 0 ; i < 3 ; i++){
-        for(int j = i+1 ; j < 5 ; j++){
-            if(ranks[i] == ranks[j]){
-                counter++;
-            }
-        }
-        if(counter == 2){
-            return true;
-        }
-        counter = 0;
-    } 
-    return false;
+
+bool isThreeOfKind(const PokerHand * pokerHand){
+    return pairChecker(pokerHand , 3);
 }
-bool isTwoPair(char* suits , int* ranks){
+
+bool isTwoPair(const PokerHand * pokerHand){
     int counter = 0;
     int pairCounter = 0;
     for(int i = 0 ; i < 4 ; i++){
         for(int j = i+1 ; j < 5 ; j++){
-            if(ranks[i] == ranks[j]){
+            if(pokerHand->ranks[i] == pokerHand->ranks[j]){
                 counter++;
             }
         }
@@ -94,21 +83,27 @@ bool isTwoPair(char* suits , int* ranks){
     } 
     return pairCounter == 2 ? true : false;
 }
-bool isOnePair(char* suits , int* ranks){
-    int counter = 0;
-    for(int i = 0 ; i < 4 ; i++){
+
+bool isOnePair(const PokerHand * pokerHand){
+    return pairChecker(pokerHand , 2);
+}
+
+bool isHighCard(const PokerHand * pokerHand){
+    return true;
+}
+
+bool pairChecker(const PokerHand * pokerHand , int numberOfPairs){
+    int pairCounter = 0;
+    for(int i = 0 ; i < 5 ; i++){
         for(int j = 0 ; j < 5 ; j++){
-            if(ranks[i] == ranks[j]){
-                counter++;
+            if(pokerHand->ranks[i] == pokerHand->ranks[j]){
+                pairCounter++;
             }
         }
-        if(counter == 2){
+        if(pairCounter == numberOfPairs){
             return true;
         }
-        counter = 0;
-    } 
+        pairCounter = 0;
+    }
     return false;
-}
-bool isHighCard(char* suits , int* ranks){
-    return true;
 }
